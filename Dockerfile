@@ -1,4 +1,4 @@
-FROM golang:1.21.3-bullseye
+FROM golang:1.21-bullseye
 WORKDIR /opt
 COPY go.mod .
 COPY go.sum .
