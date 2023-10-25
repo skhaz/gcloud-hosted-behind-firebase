@@ -1,0 +1,47 @@
+name: Deploy on Google Cloud Platform
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-npm
+          path: |
+            ~/.npm
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud config set run/region ${{ secrets.REGION }}
+          gcloud run deploy ${{ secrets.SERVICE_NAME }} --source $(pwd) --platform managed --allow-unauthenticated
+          gcloud run services update-traffic ${{ secrets.SERVICE_NAME }} --to-latest
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Firebase
+        run: npm install --global firebase-tools
+
+      - name: Deploy to Firebase Hosting
+        run: firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }} --project ${{ secrets.GCP_PROJECT_ID }}

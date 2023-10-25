@@ -1,0 +1,14 @@
+{
+  "hosting": {
+    "rewrites": [
+      {
+        "source": "rpc.carimbo.cloud/**",
+        "run": {
+          "serviceId": "rpc",
+          "region": "us-central1",
+          "pinTag": true
+        }
+      }
+    ]
+  }
+}
